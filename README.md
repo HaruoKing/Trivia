@@ -113,4 +113,3 @@ Yes! The UI is responsive using TailwindCSS and Shadcn. You can join from:
 
 ---
 
-Enjoy hosting your own anime trivia party, Victor!
