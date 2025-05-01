@@ -7,6 +7,9 @@ struct TriviaController: RouteCollection {
         trivia.post("register", use: registerPlayer)
         trivia.get("questions", use: getQuestions)
         trivia.post("answer", use: submitAnswer)
+        trivia.get("player", ":id", use: getPlayer)
+        trivia.get("players", use: getAllPlayers)
+
     }
 
     func registerPlayer(req: Request) async throws -> Player {
@@ -19,6 +22,21 @@ struct TriviaController: RouteCollection {
     func getQuestions(req: Request) async throws -> [Question] {
         try await Question.query(on: req.db).all()
     }
+
+    func getPlayer(req: Request) async throws -> Player {
+    guard let id = req.parameters.get("id", as: UUID.self),
+          let player = try await Player.find(id, on: req.db) else {
+        throw Abort(.notFound)
+    }
+    return player
+}
+
+func getAllPlayers(req: Request) async throws -> [Player] {
+    try await Player.query(on: req.db)
+        .sort(\.$score, .descending)
+        .all()
+}
+
 
     struct AnswerSubmission: Content {
         let playerID: UUID
