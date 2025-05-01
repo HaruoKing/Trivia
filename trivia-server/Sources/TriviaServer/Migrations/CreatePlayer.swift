@@ -6,6 +6,7 @@ struct CreatePlayer: AsyncMigration {
             .id()
             .field("username", .string, .required)
             .field("score", .int, .required)
+            .field("finished", .bool, .required, .sql(.default(false))) // ✅ NEW
             .create()
     }
 

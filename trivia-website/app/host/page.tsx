@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,12 @@ import { toast } from 'sonner';
 export default function HostPage() {
   const [password, setPassword] = useState('');
   const router = useRouter();
+
+  useEffect(() => {
+    // 🧼 Ensure host does not retain player credentials
+    localStorage.removeItem('playerID');
+    localStorage.removeItem('username');
+  }, []);
 
   const handleStart = async () => {
     try {

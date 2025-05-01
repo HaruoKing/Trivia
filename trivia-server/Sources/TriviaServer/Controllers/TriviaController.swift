@@ -12,7 +12,8 @@ struct TriviaController: RouteCollection {
         trivia.post("seed", use: seedTrivia)
         trivia.get("game-state", use: getGameState)
         trivia.post("start", use: startGame)
-
+        trivia.get("players", "finished", use: checkAllPlayersFinished)
+        trivia.get("players", "active", use: getActivePlayers)
     }
 
     func registerPlayer(req: Request) async throws -> Player {
@@ -22,6 +23,17 @@ struct TriviaController: RouteCollection {
     try await player.save(on: req.db)
 
     return player
+}
+
+func getActivePlayers(req: Request) async throws -> [Player] {
+    try await Player.query(on: req.db)
+        .filter(\.$finished == false)
+        .all()
+}
+
+func checkAllPlayersFinished(req: Request) async throws -> Bool {
+    let players = try await Player.query(on: req.db).all()
+    return players.allSatisfy { $0.finished }
 }
 
 
@@ -82,20 +94,27 @@ func startGame(req: Request) async throws -> HTTPStatus {
         let answer: String
     }
 
-    func submitAnswer(req: Request) async throws -> HTTPStatus {
-        let submission = try req.content.decode(AnswerSubmission.self)
+   func submitAnswer(req: Request) async throws -> HTTPStatus {
+    let submission = try req.content.decode(AnswerSubmission.self)
 
-        guard let player = try await Player.find(submission.playerID, on: req.db),
-              let question = try await Question.find(submission.questionID, on: req.db) else {
-            throw Abort(.notFound)
-        }
-
-        if submission.answer.lowercased().trimmingCharacters(in: .whitespacesAndNewlines) ==
-            question.correctAnswer.lowercased().trimmingCharacters(in: .whitespacesAndNewlines) {
-            player.score += 5
-            try await player.save(on: req.db)
-        }
-
-        return .ok
+    guard let player = try await Player.find(submission.playerID, on: req.db),
+          let question = try await Question.find(submission.questionID, on: req.db) else {
+        throw Abort(.notFound)
     }
+
+    if submission.answer.lowercased().trimmingCharacters(in: .whitespacesAndNewlines) ==
+        question.correctAnswer.lowercased().trimmingCharacters(in: .whitespacesAndNewlines) {
+        player.score += 5
+    }
+
+    // If this is the last question (assumes 20 is max)
+    let allQuestions = try await Question.query(on: req.db).sort(\.$id).all()
+    if let last = allQuestions.last, last.id == question.id {
+        player.finished = true
+    }
+
+    try await player.save(on: req.db)
+    return .ok
+}
+
 }

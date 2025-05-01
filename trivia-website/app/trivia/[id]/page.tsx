@@ -31,12 +31,18 @@ export default function QuestionPage() {
   const playerID = typeof window !== 'undefined' ? localStorage.getItem('playerID') : null;
 
   useEffect(() => {
+    const playerID = localStorage.getItem('playerID');
+    if (!playerID) {
+      router.replace('/'); // redirect to homepage
+      return;
+    }
+  
     const fetchQuestions = async () => {
       try {
         const res = await fetch('http://192.168.0.12:8080/trivia/questions');
         const data = await res.json();
         setQuestions(data);
-
+  
         const question = data[questionNumber - 1];
         if (!question) {
           router.push('/trivia/result');
@@ -49,17 +55,17 @@ export default function QuestionPage() {
         setIsLoading(false);
       }
     };
-
+  
     fetchQuestions();
   }, [questionNumber, router]);
-
+  
   const handleAnswer = async (answer: string) => {
     if (!playerID || !currentQuestion) return;
     setIsSubmitting(true);
-
+  
     const isCorrect = answer.trim().toLowerCase() === currentQuestion.correctAnswer.trim().toLowerCase();
     setFeedback(isCorrect ? '✅ Correct!' : '❌ Incorrect...');
-
+  
     try {
       await fetch('http://192.168.0.12:8080/trivia/answer', {
         method: 'POST',
@@ -70,11 +76,20 @@ export default function QuestionPage() {
           answer,
         }),
       });
-
-      setTimeout(() => {
+  
+      setTimeout(async () => {
         setFeedback(null);
+  
         if (questionNumber >= 20) {
-          router.push('/trivia/result');
+          // ✅ Check if all players finished
+          const res = await fetch('http://192.168.0.12:8080/trivia/players/finished');
+          const allDone = await res.json();
+  
+          if (allDone) {
+            router.push('/trivia/result');
+          } else {
+            router.push('/trivia/waiting-for-results');
+          }
         } else {
           router.push(`/trivia/${questionNumber + 1}`);
         }
@@ -84,6 +99,7 @@ export default function QuestionPage() {
       setIsSubmitting(false);
     }
   };
+  
 
   if (isLoading || !currentQuestion) {
     return (
