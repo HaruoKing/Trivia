@@ -10,6 +10,8 @@ struct TriviaController: RouteCollection {
         trivia.get("player", ":id", use: getPlayer)
         trivia.get("players", use: getAllPlayers)
         trivia.post("seed", use: seedTrivia)
+        trivia.get("game-state", use: getGameState)
+        trivia.post("start", use: startGame)
 
     }
 
@@ -21,6 +23,7 @@ struct TriviaController: RouteCollection {
 
     return player
 }
+
 
     func getQuestions(req: Request) async throws -> [Question] {
         try await Question.query(on: req.db).all()
@@ -42,6 +45,33 @@ func getAllPlayers(req: Request) async throws -> [Player] {
 
 func seedTrivia(req: Request) async throws -> HTTPStatus {
     try await TriviaSeeder.seed(on: req.db)
+    return .ok
+}
+
+func getGameState(req: Request) async throws -> GameState {
+    guard let state = try await GameState.query(on: req.db).first() else {
+        throw Abort(.notFound)
+    }
+    return state
+}
+
+func startGame(req: Request) async throws -> HTTPStatus {
+    struct AdminStartPayload: Content {
+        let password: String
+    }
+
+    let payload = try req.content.decode(AdminStartPayload.self)
+
+    guard payload.password == "helloworld" else {
+        throw Abort(.unauthorized, reason: "Invalid admin password.")
+    }
+
+    guard let state = try await GameState.query(on: req.db).first() else {
+        throw Abort(.notFound)
+    }
+
+    state.started = true
+    try await state.save(on: req.db)
     return .ok
 }
 

@@ -8,6 +8,7 @@ public func configure(_ app: Application) async throws {
 
     app.migrations.add(CreatePlayer())
     app.migrations.add(CreateQuestion())
+    app.migrations.add(CreateGameState())
     try await app.autoMigrate()
 
 let corsConfig = CORSMiddleware.Configuration(
@@ -17,7 +18,7 @@ let corsConfig = CORSMiddleware.Configuration(
     )
     let cors = CORSMiddleware(configuration: corsConfig)
     app.middleware.use(cors)
-    
+
     // ✅ Auto seed questions if none exist
     try await TriviaSeeder.seed(on: app.db)
 

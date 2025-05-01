@@ -17,32 +17,41 @@ export default function HomePage() {
       toast.error('Please enter a username.');
       return;
     }
-
+  
     setIsLoading(true);
-
+  
     try {
       const res = await fetch('http://192.168.0.12:8080/trivia/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username }),
       });
-
+  
       const data = await res.json();
-
+  
       if (!res.ok) {
         throw new Error(data.error || 'Failed to register');
       }
-
+  
       localStorage.setItem('playerID', data.id);
       localStorage.setItem('username', data.username);
-
-      router.push('/trivia/1');
+  
+      // Check game state
+      const stateRes = await fetch('http://192.168.0.12:8080/trivia/game-state');
+      const state = await stateRes.json();
+  
+      if (state.started) {
+        router.push('/trivia/1');
+      } else {
+        router.push('/waiting');
+      }
     } catch (err: any) {
       toast.error(err.message || 'Something went wrong.');
     } finally {
       setIsLoading(false);
     }
   };
+  
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-4 bg-black/60 backdrop-blur">
