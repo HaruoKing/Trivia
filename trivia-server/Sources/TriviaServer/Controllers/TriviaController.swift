@@ -9,15 +9,18 @@ struct TriviaController: RouteCollection {
         trivia.post("answer", use: submitAnswer)
         trivia.get("player", ":id", use: getPlayer)
         trivia.get("players", use: getAllPlayers)
+        trivia.post("seed", use: seedTrivia)
 
     }
 
     func registerPlayer(req: Request) async throws -> Player {
-        let input = try req.content.decode(Player.self)
-        let player = Player(username: input.username)
-        try await player.save(on: req.db)
-        return player
-    }
+    let input = try req.content.decode(PlayerCreateDTO.self)
+
+    let player = Player(username: input.username, score: 0)
+    try await player.save(on: req.db)
+
+    return player
+}
 
     func getQuestions(req: Request) async throws -> [Question] {
         try await Question.query(on: req.db).all()
@@ -35,6 +38,11 @@ func getAllPlayers(req: Request) async throws -> [Player] {
     try await Player.query(on: req.db)
         .sort(\.$score, .descending)
         .all()
+}
+
+func seedTrivia(req: Request) async throws -> HTTPStatus {
+    try await TriviaSeeder.seed(on: req.db)
+    return .ok
 }
 
 

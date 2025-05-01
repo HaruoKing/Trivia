@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
 type Question = {
@@ -11,6 +12,8 @@ type Question = {
   text: string;
   options: string[];
   correctAnswer: string;
+  type: 'multipleChoice' | 'text';
+  hint?: string;
 };
 
 export default function QuestionPage() {
@@ -20,8 +23,10 @@ export default function QuestionPage() {
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+  const [textAnswer, setTextAnswer] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
 
   const playerID = typeof window !== 'undefined' ? localStorage.getItem('playerID') : null;
 
@@ -38,10 +43,10 @@ export default function QuestionPage() {
         } else {
           setCurrentQuestion(question);
         }
-      } catch (err) {
+      } catch {
         toast.error('Failed to load question.');
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
@@ -50,7 +55,10 @@ export default function QuestionPage() {
 
   const handleAnswer = async (answer: string) => {
     if (!playerID || !currentQuestion) return;
-    setSubmitting(true);
+    setIsSubmitting(true);
+
+    const isCorrect = answer.trim().toLowerCase() === currentQuestion.correctAnswer.trim().toLowerCase();
+    setFeedback(isCorrect ? '✅ Correct!' : '❌ Incorrect...');
 
     try {
       await fetch('http://192.168.0.12:8080/trivia/answer', {
@@ -63,22 +71,24 @@ export default function QuestionPage() {
         }),
       });
 
-      if (questionNumber >= 20) {
-        router.push('/trivia/result');
-      } else {
-        router.push(`/trivia/${questionNumber + 1}`);
-      }
-    } catch (err) {
+      setTimeout(() => {
+        setFeedback(null);
+        if (questionNumber >= 20) {
+          router.push('/trivia/result');
+        } else {
+          router.push(`/trivia/${questionNumber + 1}`);
+        }
+      }, 1500);
+    } catch {
       toast.error('Failed to submit answer.');
-    } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
   };
 
-  if (loading || !currentQuestion) {
+  if (isLoading || !currentQuestion) {
     return (
-      <main className="min-h-screen flex items-center justify-center">
-        <p className="text-lg">Loading...</p>
+      <main className="min-h-screen flex items-center justify-center p-4">
+        <p className="text-lg animate-pulse">Loading question...</p>
       </main>
     );
   }
@@ -90,21 +100,53 @@ export default function QuestionPage() {
           <CardTitle className="text-xl">Question {questionNumber}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-  <p className="mb-4 text-lg font-medium">{currentQuestion.text}</p>
-  <div className="flex flex-col gap-4">
-    {currentQuestion.options.map((option, idx) => (
-      <Button
-        key={idx}
-        variant="secondary"
-        onClick={() => handleAnswer(option)}
-        disabled={submitting}
-        className="w-full"
-      >
-        {option}
-      </Button>
-    ))}
-  </div>
-</CardContent>
+          <p className="text-lg font-medium">{currentQuestion.text}</p>
+
+          {currentQuestion.hint && (
+            <p className="text-sm text-muted-foreground italic">Hint: {currentQuestion.hint}</p>
+          )}
+
+          {currentQuestion.type === 'multipleChoice' ? (
+            <div className="flex flex-col gap-4">
+              {currentQuestion.options.map((option, idx) => (
+                <Button
+                  key={idx}
+                  variant="secondary"
+                  className="w-full"
+                  onClick={() => handleAnswer(option)}
+                  disabled={isSubmitting}
+                >
+                  {option}
+                </Button>
+              ))}
+            </div>
+          ) : (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleAnswer(textAnswer);
+              }}
+              className="space-y-4"
+            >
+              <Input
+                value={textAnswer}
+                onChange={(e) => setTextAnswer(e.target.value)}
+                placeholder="Type your answer"
+                disabled={isSubmitting}
+                className="w-full"
+              />
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                Submit Answer
+              </Button>
+            </form>
+          )}
+
+          {feedback && (
+            <p className={`text-lg font-semibold ${feedback.includes('✅') ? 'text-green-500' : 'text-red-500'}`}>
+              {feedback}
+            </p>
+          )}
+        </CardContent>
       </Card>
     </main>
   );
