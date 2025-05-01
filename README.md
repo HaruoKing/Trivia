@@ -1,131 +1,116 @@
 # 🎮 Victor's Anime Trivia Game
 
-A fun, mobile-friendly, anime-themed trivia game built with a **Vapor backend** and a **Next.js + Shadcn UI frontend**. Designed for quick local network play with score tracking and personal trivia questions!
+This is a full-stack local trivia web game that runs across mobile and desktop. Built with:
+
+- ✅ **Vapor (Swift)** for the backend server
+- ✅ **Next.js + Shadcn UI** for the frontend
+- ✅ **SQLite** for local persistence
+- ✅ **Local IP** networking so all players can join on the same Wi-Fi
 
 ---
 
-## ✨ Features
+## 🧠 What It Is
 
-- 🎭 20-question trivia game featuring Victor’s favorite topics (anime, programming, music, etc.)
-- 🧠 +5 points for each correct answer
-- 📱 Responsive, mobile-first UI using Shadcn components
-- ☁️ Lightweight API built with Vapor (Swift) to handle:
-  - Player registration
-  - Question delivery
-  - Answer validation & score tracking
-- 📡 Optimized for **same Wi-Fi network** play — just scan a QR code and go!
+A personalized trivia quiz experience where:
 
----
-
-## 🧩 Tech Stack
-
-| Layer     | Technology       |
-|-----------|------------------|
-| Backend   | [Vapor (Swift)](https://vapor.codes) |
-| Frontend  | [Next.js (App Router)](https://nextjs.org) |
-| UI Kit    | [Shadcn UI](https://ui.shadcn.com) |
-| Styling   | Tailwind CSS     |
-| Database  | SQLite (Local) or PostgreSQL (Optional) |
+- The **host** (Victor) starts the game after all players join.
+- **Players** register with a name and answer 20 curated anime/personality questions.
+- Everyone must answer each question **in sync**—no skipping ahead.
+- Scores are calculated and shown on a **live leaderboard**.
+- Entire game runs locally and can be tested from multiple devices.
 
 ---
 
-## 🚀 Setup Instructions
+## 📁 Structure
 
-### 🔧 Prerequisites
-
-- [Swift](https://www.swift.org/download/)
-- [Vapor Toolbox](https://docs.vapor.codes/install/macos/)
-- [Node.js & npm](https://nodejs.org/)
-- [pnpm](https://pnpm.io/) or `npm`, `yarn`
-- [Vercel CLI](https://vercel.com/docs/cli) *(for deployment)*
-
----
-
-### ⚙️ 1. Backend (Vapor)
-
-```bash
-git clone https://github.com/your-username/anime-trivia-game.git
-cd anime-trivia-game/server
-swift build
-vapor run migrate
-vapor run serve --hostname 0.0.0.0
 ```
-
-> 🔗 The backend will be accessible via `http://<your-local-ip>:8080/`
-
----
-
-### ⚙️ 2. Frontend (Next.js + Shadcn UI)
-
-```bash
-cd anime-trivia-game/web
-pnpm install        # or npm install / yarn
-pnpm dev            # or npm run dev / yarn dev
-```
-
-> Access the app at `http://localhost:3000`
-
----
-
-## 🔄 API Overview
-
-### `POST /trivia/register`
-Registers a new player.
-
-```json
-{
-  "username": "sugoi_player"
-}
+trivia-project/
+├── server/            # Vapor backend with REST API + Seeder
+├── website/           # Next.js frontend client
+└── README.md          # You're reading it now
 ```
 
 ---
 
-### `GET /trivia/questions`
-Fetches all questions with options.
+## ⚙️ Prerequisites
+
+- Swift + Vapor toolchain
+- Node.js + npm
+- Devices connected to the same network
+- Local IP address (e.g., `http://192.168.0.12:8080`)
 
 ---
 
-### `POST /trivia/answer`
-Submits an answer to a question.
+## 🚀 How to Run
 
-```json
-{
-  "playerID": "<uuid>",
-  "questionID": "<uuid>",
-  "answer": "Tell Your World"
-}
-```
-
-Returns: `200 OK` on success
+1. `cd server` → follow instructions in `server/README.md` to start the backend
+2. `cd website` → follow instructions in `website/README.md` to start the frontend
+3. Visit your frontend URL on your **iPad, iPhone, or laptop** browser
 
 ---
 
-## 📱 Network Setup for Mobile Play
+## 🔑 How It Works
 
-1. Connect all phones and laptops to the **same Wi-Fi**.
-2. Use `http://<your-local-ip>:3000` to access the web app on mobile.
-3. Scan a QR code that points to this address (use any QR generator).
+### 👤 Host:
 
----
+- Goes to `/host`
+- Enters password `"helloworld"`
+- Starts the game → game state becomes `started: true`
 
-## 💡 Ideas for Enhancements
+### 🙋 Players:
 
-- Show leaderboard with top scorers
-- Add time-based scoring bonuses
-- Integrate Hatsune Miku audio or animations
-- Use WebSocket for real-time updates
-
----
-
-## 🧠 Author
-
-**Victor Rodriguez**  
-Full-stack dev & anime enjoyer  
-📧 jbts1124@gmail.com  
-🎮 Twitch: [@akumetsuv](https://www.twitch.tv/akumetsuv)
+- Go to home page `/`
+- Enter their name to register
+- Must wait for host to start
+- Progress together through each question
 
 ---
 
-## 📜 License
+## 🔌 Backend APIs
 
-MIT License — free to use, remix, and deploy!
+| Method | Endpoint                        | Description                            |
+|--------|----------------------------------|----------------------------------------|
+| POST   | `/trivia/register`              | Register a player                      |
+| GET    | `/trivia/questions`             | Get all trivia questions               |
+| POST   | `/trivia/answer`                | Submit an answer                       |
+| GET    | `/trivia/player/:id`           | Get one player by ID                   |
+| GET    | `/trivia/players`              | Get all players (leaderboard)          |
+| GET    | `/trivia/players/active`       | Get players who haven't finished       |
+| GET    | `/trivia/players/finished`     | Check if all players are done          |
+| GET    | `/trivia/game-state`           | Check if host started the game         |
+| POST   | `/trivia/start`                | Host starts the game                   |
+| GET    | `/trivia/waiting/:questionID`  | Get players who haven't answered yet   |
+| POST   | `/trivia/seed`                 | Seeds the 20 questions (auto-run)      |
+
+---
+
+## 🌐 Sites & Tools Used
+
+- [https://shadcn.dev/](https://shadcn.dev/)
+- [https://nextjs.org](https://nextjs.org)
+- [https://vapor.codes](https://vapor.codes)
+
+---
+
+## 🎯 Game Rules
+
+- 20 questions
+- 5 points per correct answer
+- Players must progress together
+- Host does not play
+- All results shown only after everyone finishes
+
+---
+
+## 📱 Phone Friendly?
+
+Yes! The UI is responsive using TailwindCSS and Shadcn. You can join from:
+
+- iPad
+- iPhone
+- Android
+- Laptop
+
+---
+
+Enjoy hosting your own anime trivia party, Victor!
