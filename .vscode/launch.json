@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:Trivia}/trivia-server",
+            "name": "Debug TriviaServer (trivia-server)",
+            "program": "${workspaceFolder:Trivia}/trivia-server/.build/debug/TriviaServer",
+            "preLaunchTask": "swift: Build Debug TriviaServer (trivia-server)"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:Trivia}/trivia-server",
+            "name": "Release TriviaServer (trivia-server)",
+            "program": "${workspaceFolder:Trivia}/trivia-server/.build/release/TriviaServer",
+            "preLaunchTask": "swift: Build Release TriviaServer (trivia-server)"
+        }
+    ]
+}
