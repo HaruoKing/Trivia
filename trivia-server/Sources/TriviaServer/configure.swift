@@ -9,6 +9,7 @@ public func configure(_ app: Application) async throws {
     app.migrations.add(CreatePlayer())
     app.migrations.add(CreateQuestion())
     app.migrations.add(CreateGameState())
+    app.migrations.add(CreateAnswer())
     try await app.autoMigrate()
 
 let corsConfig = CORSMiddleware.Configuration(
