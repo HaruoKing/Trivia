@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌐 Trivia Website (Next.js)
 
-## Getting Started
+This is the frontend for the multiplayer trivia game. It uses [Next.js 14 App Router](https://nextjs.org) with [TailwindCSS](https://tailwindcss.com) and [shadcn/ui](https://ui.shadcn.com) components.
 
-First, run the development server:
+## 🎮 What It Does
+
+- Provides a mobile-friendly interface for players.
+- Handles trivia answers, waiting rooms, and real-time syncing.
+- Hosts can trigger the game start from the admin panel.
+- Fully responsive design for phones and tablets.
+
+## 🔧 Setup
+
+### 📦 Install Dependencies
+
+```bash
+cd trivia-website
+npm install
+```
+
+### 🌍 Environment Variables
+
+Create a `.env.local` file:
+
+```env
+NEXT_PUBLIC_API_URL=http://192.168.0.12:8080
+```
+
+Replace with your local LAN IP if testing across devices.
+
+### 🧪 Start the Frontend
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Access the site at `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🧠 Game Flow
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Player joins from the homepage and enters their name.
+2. They wait on a waiting screen until the host starts the game.
+3. Host visits `/host`, enters password `helloworld`, and starts the game.
+4. Players answer each question one by one.
+5. After all 20 questions, scores are shown.
 
-## Learn More
+## 📁 Important Routes
 
-To learn more about Next.js, take a look at the following resources:
+| Route                              | Description                           |
+|-----------------------------------|---------------------------------------|
+| `/`                                | Join screen                           |
+| `/host`                            | Start game screen (admin only)        |
+| `/trivia/[id]`                     | Question view by index                |
+| `/trivia/waiting-for-question/[id]`| Shows waiting screen per question     |
+| `/trivia/result`                   | Final leaderboard                     |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🧩 Packages Used
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- [Next.js](https://nextjs.org)
+- [TailwindCSS](https://tailwindcss.com)
+- [shadcn/ui](https://ui.shadcn.com)
+- [sonner](https://sonner.emilkowal.dev) (toast notifications)
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
