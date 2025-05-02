@@ -1,11 +1,11 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { TriviaAPI } from '@/lib/api';
 
 type Question = {
   id: string;
@@ -20,29 +20,27 @@ export default function QuestionPage() {
   const router = useRouter();
   const params = useParams();
   const questionNumber = Number(params.id);
-
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [textAnswer, setTextAnswer] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
-
   const playerID = typeof window !== 'undefined' ? localStorage.getItem('playerID') : null;
-
+  
   useEffect(() => {
     if (!playerID) {
       router.replace('/');
       return;
     }
-
+    
     const fetchQuestions = async () => {
       try {
-        const res = await fetch('http://192.168.0.12:8080/trivia/questions');
+        const res = await fetch(TriviaAPI.questions);
         const data: Question[] = await res.json();
         setQuestions(data);
-
         const question = data[questionNumber - 1];
+        
         if (!question) {
           router.push('/trivia/result');
         } else {
@@ -56,19 +54,18 @@ export default function QuestionPage() {
         setIsLoading(false);
       }
     };
-
+    
     fetchQuestions();
   }, [questionNumber, playerID, router]);
-
+  
   const handleAnswer = async (answer: string) => {
     if (!playerID || !currentQuestion) return;
     setIsSubmitting(true);
-
     const isCorrect = answer.trim().toLowerCase() === currentQuestion.correctAnswer.trim().toLowerCase();
     setFeedback(isCorrect ? '✅ Correct!' : '❌ Incorrect...');
-
+    
     try {
-      await fetch('http://192.168.0.12:8080/trivia/answer', {
+      await fetch(TriviaAPI.answer, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -77,10 +74,9 @@ export default function QuestionPage() {
           answer,
         }),
       });
-
+      
       setTimeout(() => {
         setFeedback(null);
-
         if (questionNumber >= 20) {
           router.push('/trivia/result');
         } else {
@@ -93,7 +89,7 @@ export default function QuestionPage() {
       setIsSubmitting(false);
     }
   };
-
+  
   if (isLoading || !currentQuestion) {
     return (
       <main className="min-h-screen flex items-center justify-center p-4">
@@ -101,7 +97,7 @@ export default function QuestionPage() {
       </main>
     );
   }
-
+  
   return (
     <main className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-xl text-center">
@@ -110,11 +106,9 @@ export default function QuestionPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           <p className="text-lg font-medium">{currentQuestion.text}</p>
-
           {currentQuestion.hint && (
             <p className="text-sm text-muted-foreground italic">Hint: {currentQuestion.hint}</p>
           )}
-
           {currentQuestion.type === 'multipleChoice' ? (
             <div className="flex flex-col gap-4">
               {currentQuestion.options.map((option, idx) => (
@@ -149,7 +143,6 @@ export default function QuestionPage() {
               </Button>
             </form>
           )}
-
           {feedback && (
             <p className={`text-lg font-semibold ${feedback.includes('✅') ? 'text-green-500' : 'text-red-500'}`}>
               {feedback}
