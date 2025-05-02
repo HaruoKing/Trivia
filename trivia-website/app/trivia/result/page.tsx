@@ -1,7 +1,7 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { TriviaAPI } from '@/lib/api';
 
 type Player = {
   id: string;
@@ -11,17 +11,17 @@ type Player = {
 
 export default function ResultPage() {
   const [players, setPlayers] = useState<Player[]>([]);
-
+  
   useEffect(() => {
     const loadPlayers = async () => {
-      const res = await fetch('http://192.168.0.12:8080/trivia/players');
+      const res = await fetch(TriviaAPI.allPlayers);
       const data = await res.json();
       setPlayers(data);
     };
-
+    
     loadPlayers();
   }, []);
-
+  
   return (
     <main className="min-h-screen flex items-center justify-center p-4 bg-black/60 backdrop-blur">
       <Card className="w-full max-w-md text-center">

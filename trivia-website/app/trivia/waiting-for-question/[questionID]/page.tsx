@@ -1,23 +1,23 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { TriviaAPI } from '@/lib/api';
 
 export default function WaitingForQuestionPage() {
   const params = useParams();
   const router = useRouter();
   const questionID = params.questionID || params.questionid; // handles fallback casing
   const [waitingPlayers, setWaitingPlayers] = useState<string[]>([]);
-
+  
   useEffect(() => {
     if (!questionID || typeof questionID !== 'string') return;
-
+    
     const poll = async () => {
       try {
-        const res = await fetch(`http://192.168.0.12:8080/trivia/waiting/${questionID}`);
+        const res = await fetch(TriviaAPI.waiting(questionID as string));
         const names: string[] = await res.json();
-
+        
         if (names.length === 0) {
           const nextNum = parseInt(localStorage.getItem('nextQuestionNumber') || '2');
           router.push(`/trivia/${nextNum}`);
@@ -28,13 +28,12 @@ export default function WaitingForQuestionPage() {
         setWaitingPlayers([]);
       }
     };
-
+    
     const interval = setInterval(poll, 3000);
     poll(); // initial fetch
-
     return () => clearInterval(interval);
   }, [questionID, router]);
-
+  
   return (
     <main className="min-h-screen flex items-center justify-center p-4 bg-black/60 backdrop-blur">
       <Card className="w-full max-w-md text-center">

@@ -1,17 +1,17 @@
 'use client';
-
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { TriviaAPI } from '@/lib/api';
 
 export default function HomePage() {
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
+  
   const handleStart = async () => {
     if (!username.trim()) {
       toast.error('Please enter a username.');
@@ -21,7 +21,7 @@ export default function HomePage() {
     setIsLoading(true);
   
     try {
-      const res = await fetch('http://192.168.0.12:8080/trivia/register', {
+      const res = await fetch(TriviaAPI.register, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username }),
@@ -37,7 +37,7 @@ export default function HomePage() {
       localStorage.setItem('username', data.username);
   
       // Check game state
-      const stateRes = await fetch('http://192.168.0.12:8080/trivia/game-state');
+      const stateRes = await fetch(TriviaAPI.gameState);
       const state = await stateRes.json();
   
       if (state.started) {
@@ -52,7 +52,6 @@ export default function HomePage() {
     }
   };
   
-
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-4 bg-black/60 backdrop-blur">
       <Card className="w-full max-w-md text-center">
@@ -60,17 +59,17 @@ export default function HomePage() {
           <CardTitle className="text-2xl font-bold">🎮 Victor's Anime Trivia</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-  <Input
-    value={username}
-    onChange={(e) => setUsername(e.target.value)}
-    placeholder="Your Name"
-    disabled={isLoading}
-    className="w-full"
-  />
-  <Button className="w-full" onClick={handleStart} disabled={isLoading}>
-    {isLoading ? 'Loading...' : 'Start Trivia'}
-  </Button>
-</CardContent>
+          <Input
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Your Name"
+            disabled={isLoading}
+            className="w-full"
+          />
+          <Button className="w-full" onClick={handleStart} disabled={isLoading}>
+            {isLoading ? 'Loading...' : 'Start Trivia'}
+          </Button>
+        </CardContent>
       </Card>
     </main>
   );
