@@ -56,7 +56,7 @@ export default function HomePage() {
     <main className="min-h-screen flex flex-col items-center justify-center p-4 bg-black/60 backdrop-blur">
       <Card className="w-full max-w-md text-center">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">🎮 Victor's Anime Trivia</CardTitle>
+          <CardTitle className="text-2xl font-bold">🎮 Victor's Trivia</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Input
